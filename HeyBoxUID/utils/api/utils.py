@@ -1,4 +1,5 @@
 import time
+import uuid
 import hashlib
 import datetime
 from typing import Any, Dict, Optional
@@ -106,7 +107,7 @@ class XhhUtil:
         raw = f"{path}/bfhdkud_time={timestamp}"
         step1 = XhhUtil._md5(raw)
         step2 = step1.replace("a", "app").replace("0", "app")
-        hkey = XhhUtil._md5(step2)[:10]
+        hkey = XhhUtil._md5(step2)[:10].upper()
         return hkey, timestamp
 
     # ── 参数构造 ────────────────────────────────────────────────────────────
@@ -115,11 +116,20 @@ class XhhUtil:
     def build_common_params(
         path: str,
         heybox_id: str,
-        imei: str = "000000000000000",
-        os_type: str = "Android",
-        os_version: str = "11",
-        app_version: str = "999.0.0",
+        x_client_type: str = "web",
+        version: str = "999.0.3",
+        # imei: str = "9243b67a1d97e2a1",
+        # device_info: str = "V2171A",
+        os_type: str = "web",
+        # os_version: str = "9",
+        # app_version: str = "1.3.339",
+        nonce: str = uuid.uuid4().hex,
         extra: Optional[Dict[str, Any]] = None,
+        x_os_type: str = "Windows",
+        # build: str = "892",
+        # dw: str = "480",
+        # channel: str = "heybox",
+        x_app: str = "heybox",
     ) -> Dict[str, Any]:
         """
         构造每次请求都需要附带的公共 Query 参数（含自动签名）
@@ -132,6 +142,7 @@ class XhhUtil:
             os_version:  操作系统版本
             app_version: App 版本号
             extra:       额外附加参数
+            nonce:       随机数（任意32位字符串即可）
 
         Returns:
             完整参数字典
@@ -139,12 +150,21 @@ class XhhUtil:
         hkey, ts = XhhUtil.gen_hkey(path)
         params: Dict[str, Any] = {
             "heybox_id": heybox_id,
-            "imei": imei,
+            # "imei": imei,
             "os_type": os_type,
-            "os_version": os_version,
-            "version": app_version,
+            "x_client_type": x_client_type,
+            "version": version,
+            # "os_version": os_version,
+            # "version": app_version,
             "_time": ts,
             "hkey": hkey,
+            "nonce": nonce,
+            # "device_info": device_info,
+            "x_os_type": x_os_type,
+            # "build": build,
+            # "dw": dw,
+            # "channel": channel,
+            "x_app": x_app,
         }
         if extra:
             params.update(extra)

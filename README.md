@@ -18,3 +18,7 @@
 > 支持NoneBot2 & HoshinoBot & ZeroBot & YunzaiBot & Koishi的小黑盒Bot插件
 
 ⚠️暂未完成功能，还在开发中，敬请期待
+
+## to do
+
+- [ ] 解决api请求参数问题

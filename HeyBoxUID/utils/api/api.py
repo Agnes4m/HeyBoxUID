@@ -32,10 +32,15 @@ class ApiPath:
     STORE_HOME = "/store/app/index/"
     STORE_SALE = "/store/app/sale/"
 
+    # ── 签到 & 任务 ──────────────────────────────────────────────────────
+    TASK_STATS = "/task/stats/"  # 签到 + 任务完成状态（GET）
+    TASK_LIST = "/task/list/"  # 任务列表（GET）
+
 
 class ApiHeader:
     """请求头预设"""
 
+    # 通用 JSON 请求头（大多数 GET 接口使用）
     DEFAULT: Dict[str, str] = {
         "User-Agent": (
             "Mozilla/5.0 (Linux; Android 11; Pixel 5) "
@@ -61,11 +66,6 @@ class ApiHeader:
     }
 
 
-# ════════════════════════════════════════════════════════════════════════
-#  XhhApi 业务类
-# ════════════════════════════════════════════════════════════════════════
-
-
 class XhhApi(XhhRequest):
     """
     小黑盒业务 API 客户端
@@ -88,10 +88,6 @@ class XhhApi(XhhRequest):
 
     # 覆盖基类 BASE_URL（此处与默认值相同，便于测试时切换环境）
     BASE_URL = "https://api.xiaoheihe.cn"
-
-    # ══════════════════════════════════════════════════════════════════
-    #  用户 & 账号
-    # ══════════════════════════════════════════════════════════════════
 
     async def get_user_info(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -656,3 +652,125 @@ class XhhApi(XhhRequest):
                     item["sale_end_time"] = XhhUtil.timestamp_to_readable(item["sale_end_time"])
 
         return result
+
+    # ══════════════════════════════════════════════════════════════════
+    #  签到 & 任务
+    # ══════════════════════════════════════════════════════════════════
+
+    async def get_task_stats(self) -> Dict[str, Any]:
+        """
+        查询签到 & 任务完成状态（不执行签到，只读取）。
+
+        Returns::
+
+            {
+                "status": True,
+                "data": {
+                    "sign_in": True,  # 今日是否已签到
+                    "sign_in_streak": 7,  # 连续签到天数
+                    "coin": 100,  # 今日获得/可获得盒币
+                    "exp": 120,  # 当前经验值
+                    "max_exp": 200,  # 升级所需经验
+                    "share": False,  # 今日是否完成分享任务
+                    "like": False,  # 今日是否完成点赞任务
+                },
+            }
+        """
+        raw = await self._signed_get(
+            ApiPath.TASK_STATS,
+            headers=ApiHeader.DEFAULT,
+        )
+        return _parse_task_stats(raw)
+
+    async def checkin(self) -> Dict[str, Any]:
+        """
+        执行每日签到。
+
+        小黑盒签到通过 GET /task/stats/ 触发，
+        服务端以首次访问即签到的方式处理。
+
+        Returns::
+
+            {
+                "status":  True,
+                "message": "签到成功！获得盒币 +100",
+                "data": {
+                    "sign_in":        True,
+                    "sign_in_streak": 8,
+                    "coin":           100,
+                    "exp":            125,
+                    "max_exp":        200,
+                    "share":          False,
+                    "like":           False,
+                }
+            }
+            或已签到时 status=False, message="今日已签到"
+        """
+        raw = await self._signed_get(
+            ApiPath.TASK_STATS,
+            headers=ApiHeader.DEFAULT,
+        )
+        return _parse_task_stats(raw, is_checkin_call=True)
+
+
+# ════════════════════════════════════════════════════════════════════════
+#  任务状态解析（模块级辅助，不依赖实例）
+# ════════════════════════════════════════════════════════════════════════
+
+
+def _parse_task_stats(raw: dict, is_checkin_call: bool = False) -> Dict[str, Any]:
+    """
+    解析 /task/stats/ 的原始响应。
+
+    response 结构（基于逆向社区文档）：
+    {
+        "status": "ok",
+        "data": {
+            "sign_in":        1 or 0,     # 是否已签到
+            "sign_in_streak": 7,          # 连续签到天数
+            "coin":           100,        # 今日签到盒币奖励
+            "exp":            120,        # 当前经验
+            "max_exp":        200,        # 升级所需经验
+            "task1":          1 or 0,     # 分享任务
+            "task2":          1 or 0,     # 点赞任务
+        }
+    }
+    """
+    if raw.get("status") != "ok":
+        msg = raw.get("message", raw.get("msg", "请求失败，请检查 pkey 是否过期"))
+        return {"status": False, "message": str(msg), "data": {}}
+
+    d = raw.get("data", {})
+    signed = bool(d.get("sign_in", 0))
+    streak = int(d.get("sign_in_streak", 0))
+    coin = int(d.get("coin", 0))
+    exp = int(d.get("exp", 0))
+    max_exp = int(d.get("max_exp", 0))
+    task_share = bool(d.get("task1", 0))
+    task_like = bool(d.get("task2", 0))
+
+    parsed_data = {
+        "sign_in": signed,
+        "sign_in_streak": streak,
+        "coin": coin,
+        "exp": exp,
+        "max_exp": max_exp,
+        "share": task_share,
+        "like": task_like,
+    }
+
+    if is_checkin_call:
+        if signed:
+            return {
+                "status": True,
+                "message": f"签到成功！盒币 +{coin}，连续签到 {streak} 天",
+                "data": parsed_data,
+            }
+        else:
+            return {
+                "status": False,
+                "message": "今日已签到",
+                "data": parsed_data,
+            }
+
+    return {"status": True, "message": "ok", "data": parsed_data}

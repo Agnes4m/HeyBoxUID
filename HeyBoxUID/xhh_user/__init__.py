@@ -98,21 +98,6 @@ async def manage_uid(bot: Bot, ev: Event):
 async def add_ck(bot: Bot, ev: Event):
     """
     添加小黑盒登录凭据（heybox_id + pkey）。
-
-    获取方式：
-      使用抓包工具（Charles / mitmproxy）拦截 api.xiaoheihe.cn 的请求：
-        - URL 参数中取 heybox_id
-        - Cookie 中取 pkey
-
-    支持格式：
-
-    格式一（推荐，分行）：
-        添加ck
-        heybox_id=12345678
-        pkey=abcdef1234567890abcdef
-
-    格式二（Cookie 字符串直接粘贴）：
-        添加ck heybox_id=12345678; pkey=abcdef1234567890abcdef; ...
     """
     logger.info(f"{MSG_PREFIX} [添加 Cookie]  QQ={ev.user_id}")
 
@@ -130,16 +115,18 @@ async def add_ck(bot: Bot, ev: Event):
 
     heybox_id = credential["heybox_id"]
     pkey = credential["pkey"]
+    x_xhh_tokenid = credential["x_xhh_tokenid"]
 
     logger.info(f"{MSG_PREFIX} 凭据解析成功  heybox_id={heybox_id}  pkey={'*' * 8}")
 
     user_data = cast(
         UserData,
         {
-            "qq_id": ev.user_id,
+            "user_id": ev.user_id,
             "group_id": ev.group_id,
-            "heybox_id": heybox_id,
+            "uid": heybox_id,
             "pkey": pkey,
+            "x_xhh_tokenid": x_xhh_tokenid,
         },
     )
 

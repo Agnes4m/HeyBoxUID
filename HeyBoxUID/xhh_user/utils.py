@@ -13,6 +13,7 @@ def parse_xhh_credential(text: str) -> dict:
     """
     heybox_id = ""
     pkey = ""
+    x_xhh_tokenid = ""
 
     segments: list[str] = []
     for line in text.splitlines():
@@ -25,12 +26,19 @@ def parse_xhh_credential(text: str) -> dict:
         key = key.strip().lower()
         value = value.strip()
 
-        if key == "heybox_id":
-            heybox_id = value
-        elif key == "pkey":
-            pkey = value
+        # 同时兼容 App 端（heybox_id / pkey）
+        # 和浏览器端（user_heybox_id / user_pkey）
+        if key in ("heybox_id", "user_heybox_id"):
+            if not heybox_id:  # 优先保留先出现的值
+                heybox_id = value
+        elif key in ("pkey", "user_pkey"):
+            if not pkey:
+                pkey = value
+        elif key in ("x_xhh_tokenid", "user_x_xhh_tokenid"):
+            if not x_xhh_tokenid:
+                x_xhh_tokenid = value
 
-    return {"heybox_id": heybox_id, "pkey": pkey}
+    return {"heybox_id": heybox_id, "pkey": pkey, "x_xhh_tokenid": x_xhh_tokenid}
 
 
 def _missing_fields(credential: dict) -> list[str]:
