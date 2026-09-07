@@ -1,7 +1,7 @@
+import datetime
+import hashlib
 import time
 import uuid
-import hashlib
-import datetime
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
@@ -241,7 +241,9 @@ class XhhUtil:
     def timestamp_to_readable(timestamp: int) -> str:
         """Unix 时间戳 → 可读时间字符串（如 "2025-01-21 14:30:00"）"""
         try:
-            return datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+            return datetime.datetime.fromtimestamp(timestamp).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         except Exception:
             return "未知时间"
 
