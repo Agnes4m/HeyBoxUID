@@ -1,14 +1,14 @@
 from typing import cast
 
-from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
+from gsuid_core.sv import SV
 from gsuid_core.utils.message import send_diff_msg
 
-from .utils import _missing_fields, parse_xhh_credential
-from ..utils.models import UserData
 from ..utils.database.models import XHHBind, XHHUser
+from ..utils.models import UserData
+from .utils import _missing_fields, parse_xhh_credential
 
 MSG_PREFIX = "[XHH]"
 
@@ -35,7 +35,9 @@ async def manage_uid(bot: Bot, ev: Event):
         logger.info(f"{MSG_PREFIX} [绑定 heybox_id]  QQ={qid}  UID={uid}")
 
         if not uid:
-            return await bot.send(f"{MSG_PREFIX} 请在命令后附上你的 heybox_id，例如：绑定 12345678")
+            return await bot.send(
+                f"{MSG_PREFIX} 请在命令后附上你的 heybox_id，例如：绑定 12345678"
+            )
 
         data = await XHHBind.insert_uid(qid, ev.bot_id, uid, is_digit=False)
         return await send_diff_msg(
@@ -134,7 +136,9 @@ async def add_ck(bot: Bot, ev: Event):
     # 同步写入绑定表，确保 heybox_id 与 pkey 统一
     await XHHBind.insert_uid(ev.user_id, ev.bot_id, heybox_id, is_digit=False)
 
-    await bot.send(f"{MSG_PREFIX} 凭据添加成功！\nheybox_id：{heybox_id}\n发送「我的信息」可查看当前绑定状态。")
+    await bot.send(
+        f"{MSG_PREFIX} 凭据添加成功！\nheybox_id：{heybox_id}\n发送「我的信息」可查看当前绑定状态。"
+    )
 
 
 @xhh_user.on_command(
@@ -150,7 +154,9 @@ async def export_ck(bot: Bot, ev: Event):
     logger.info(f"{MSG_PREFIX} [导出凭据]  QQ={ev.user_id}")
 
     if ev.group_id is not None:
-        return await bot.send(f"{MSG_PREFIX} 凭据含敏感信息，请在【私聊】中使用该命令！")
+        return await bot.send(
+            f"{MSG_PREFIX} 凭据含敏感信息，请在【私聊】中使用该命令！"
+        )
 
     qid = ev.user_id
     uid = await XHHBind.get_uid_by_game(qid, ev.bot_id)
@@ -165,4 +171,6 @@ async def export_ck(bot: Bot, ev: Event):
     if not pkey:
         return await bot.send(f"{MSG_PREFIX} 凭据不完整，请重新「添加ck」！")
 
-    await bot.send(f"{MSG_PREFIX} 你的登录凭据（请勿泄露给他人）：\n\nheybox_id={heybox_id}\npkey={pkey}")
+    await bot.send(
+        f"{MSG_PREFIX} 你的登录凭据（请勿泄露给他人）：\n\nheybox_id={heybox_id}\npkey={pkey}"
+    )

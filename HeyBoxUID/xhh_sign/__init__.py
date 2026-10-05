@@ -1,9 +1,9 @@
-from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
+from gsuid_core.sv import SV
 
-from .sign import do_checkin, do_all_checkin
+from .sign import do_all_checkin, do_checkin
 
 MSG_PREFIX = "[XHH]"
 
