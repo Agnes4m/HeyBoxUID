@@ -1,11 +1,10 @@
 from typing import Optional
 
-from sqlmodel import Field
 from fastapi_amis_admin.amis.components import PageSchema
-
+from gsuid_core.utils.database.base_models import Bind, User
 from gsuid_core.webconsole import site
 from gsuid_core.webconsole.mount_app import GsAdminModel
-from gsuid_core.utils.database.base_models import Bind, User
+from sqlmodel import Field
 
 from ..models import BindData, UserData
 
