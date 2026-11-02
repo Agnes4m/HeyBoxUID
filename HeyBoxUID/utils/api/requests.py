@@ -1,9 +1,9 @@
-import uuid
 import logging
+import uuid
 from typing import Any, Dict, Optional
-from typing_extensions import Self
 
 import httpx
+from typing_extensions import Self
 
 from .utils import XhhUtil
 
@@ -250,4 +250,6 @@ class XhhRequest:
             响应 JSON dict
         """
         params = self._build_params(path, extra_params)
-        return await self._post_request(path, form_data=form_data, params=params, headers=headers)
+        return await self._post_request(
+            path, form_data=form_data, params=params, headers=headers
+        )
