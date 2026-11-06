@@ -175,7 +175,9 @@ async def do_all_checkin(bot: Bot, ev: Event) -> None:
             continue
 
         try:
-            async with XhhApi(heybox_id=heybox_id, pkey=pkey, x_xhh_tokenid=x_xhh_tokenid) as api:
+            async with XhhApi(
+                heybox_id=heybox_id, pkey=pkey, x_xhh_tokenid=x_xhh_tokenid
+            ) as api:
                 result = await api.checkin()
 
             if result["status"]:

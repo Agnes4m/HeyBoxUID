@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
-from .utils import XhhUtil
 from .requests import XhhRequest
+from .utils import XhhUtil
 
 
 class ApiPath:
@@ -645,11 +645,17 @@ class XhhApi(XhhRequest):
         if result["status"] and isinstance(result["data"], dict):
             for item in result["data"].get("list", []):
                 if "current_price" in item:
-                    item["current_price_label"] = XhhUtil.price_fen_to_yuan(item["current_price"])
+                    item["current_price_label"] = XhhUtil.price_fen_to_yuan(
+                        item["current_price"]
+                    )
                 if "original_price" in item:
-                    item["original_price_label"] = XhhUtil.price_fen_to_yuan(item["original_price"])
+                    item["original_price_label"] = XhhUtil.price_fen_to_yuan(
+                        item["original_price"]
+                    )
                 if isinstance(item.get("sale_end_time"), int):
-                    item["sale_end_time"] = XhhUtil.timestamp_to_readable(item["sale_end_time"])
+                    item["sale_end_time"] = XhhUtil.timestamp_to_readable(
+                        item["sale_end_time"]
+                    )
 
         return result
 
